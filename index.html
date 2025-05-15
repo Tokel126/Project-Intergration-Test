@@ -119,5 +119,67 @@
     <p>Don't have an account? <a href="admin_user.html">Sign up</a></p>
 </div>
 
+<script type="text/javascript">
+    // JavaScript code for login page
+document.addEventListener('DOMContentLoaded', () => {
+    const API_URL = 'https://api-9zfr.onrender.com'; // Replace with your Render.com URL after deployment
+    const loginForm = document.getElementById('loginForm');
+    const messageDiv = document.getElementById('message');
+    
+    // Event listener for form submission
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Collect form data
+        const formData = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            role: document.getElementById('role').value // 'user' or 'admin'
+        };
+        
+        try {
+            const response = await fetch(`${API_URL}/api/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Login successful
+                messageDiv.textContent = 'Login successful! Redirecting...';
+                messageDiv.style.color = 'green';
+                
+                // Save token and user info to localStorage
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Redirect based on role
+                setTimeout(() => {
+                    if (data.user.role === 'user') {
+                        window.location.href = 'user-dashboard.html';
+                    } else if (data.user.role === 'admin') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        window.location.href = 'doctor-dashboard.html';
+                    }
+                }, 1000);
+            } else {
+                // Login failed
+                messageDiv.textContent = data.message || 'Login failed!';
+                messageDiv.style.color = 'red';
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+            messageDiv.textContent = 'An error occurred during login. Please try again later.';
+            messageDiv.style.color = 'red';
+        }
+    });
+});
+</script>
+
 </body>
 </html>
