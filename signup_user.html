@@ -168,6 +168,130 @@
             <p>Already have an account? <a href="index.html">Log in</a></p>
         </div>
     </div>
+
+    <script type="text/javascript">
+    
+document.addEventListener('DOMContentLoaded', () => {
+    const API_URL = 'https://api-9zfr.onrender.com'; // Replace with your Render.com URL after deployment
+    const signupForm = document.getElementById('signupForm');
+    const messageDiv = document.getElementById('message');
+    const institutionSelect = document.getElementById('institution');
+    const doctorSelect = document.getElementById('doctor_id');
+    
+    // Fetch institutions when page loads
+    fetchInstitutions();
+    
+    // Function to fetch institutions from API
+    async function fetchInstitutions() {
+        try {
+            const response = await fetch(`${API_URL}/api/institutions`);
+            const institutions = await response.json();
+            
+            institutions.forEach(institution => {
+                const option = document.createElement('option');
+                option.value = institution._id;
+                option.textContent = institution.name;
+                institutionSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error fetching institutions:', error);
+            messageDiv.textContent = 'Failed to load institutions. Please try again later.';
+            messageDiv.style.color = 'red';
+        }
+    }
+    
+    // Event listener for institution select change
+    institutionSelect.addEventListener('change', async (e) => {
+        const institutionId = e.target.value;
+        
+        // Clear previous doctor options
+        doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+        
+        if (!institutionId) return;
+        
+        try {
+            const response = await fetch(`${API_URL}/api/institutions/${institutionId}/doctors`);
+            const doctors = await response.json();
+            
+            doctors.forEach(doctor => {
+                const option = document.createElement('option');
+                option.value = doctor._id;
+                option.textContent = doctor.name;
+                doctorSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error fetching doctors:', error);
+            messageDiv.textContent = 'Failed to load doctors. Please try again later.';
+            messageDiv.style.color = 'red';
+        }
+    });
+    
+    // Event listener for form submission
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        
+        // Check if passwords match
+        if (password !== confirmPassword) {
+            messageDiv.textContent = 'Passwords do not match!';
+            messageDiv.style.color = 'red';
+            return;
+        }
+        
+        // Collect form data
+        const formData = {
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            password: password,
+            birthday: document.getElementById('birthday').value,
+            height: document.getElementById('height').value,
+            weight: document.getElementById('weight').value,
+            gender: document.getElementById('gender').value,
+            phonenumber: document.getElementById('phonenumber').value,
+            contact: document.getElementById('contact').value,
+            doctor_id: document.getElementById('doctor_id').value,
+            institution: document.getElementById('institution').value
+        };
+        
+        try {
+            const response = await fetch(`${API_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Registration successful
+                messageDiv.textContent = 'Registration successful! Redirecting to login...';
+                messageDiv.style.color = 'green';
+                
+                // Save token to localStorage
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Redirect to login page after a short delay
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            } else {
+                // Registration failed
+                messageDiv.textContent = data.message || 'Registration failed!';
+                messageDiv.style.color = 'red';
+            }
+        } catch (error) {
+            console.error('Error during registration:', error);
+            messageDiv.textContent = 'An error occurred during registration. Please try again later.';
+            messageDiv.style.color = 'red';
+        }
+    });
+});
+    </script>
     
    
 </body>
