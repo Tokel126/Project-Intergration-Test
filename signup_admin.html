@@ -125,6 +125,76 @@
             <p>Already have an account? <a href="index.html">Log in</a></p>
         </div>
     </div>
+
+    <script type="text/javascript">
+        // JavaScript code for admin signup page
+document.addEventListener('DOMContentLoaded', () => {
+    const API_URL = 'https://api-9zfr.onrender.com'; // Replace with your Render.com URL after deployment
+    const signupForm = document.getElementById('signupForm');
+    const messageDiv = document.getElementById('message');
+    
+    // Event listener for form submission
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        
+        // Check if passwords match
+        if (password !== confirmPassword) {
+            messageDiv.textContent = 'Passwords do not match!';
+            messageDiv.style.color = 'red';
+            return;
+        }
+        
+        // Collect form data
+        const formData = {
+            name: document.getElementById('user').value,
+            email: document.getElementById('email').value,
+            password: password,
+            institution: document.getElementById('name').value, // Institution name
+            isAdmin: true, // This is an admin signup
+            specialization: '', // Optional for admin
+            phone: '' // Optional for admin
+        };
+        
+        try {
+            const response = await fetch(`${API_URL}/api/doctors/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Registration successful
+                messageDiv.textContent = 'Institution and admin registered successfully! Redirecting to login...';
+                messageDiv.style.color = 'green';
+                
+                // Save token to localStorage
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Redirect to login page after a short delay
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            } else {
+                // Registration failed
+                messageDiv.textContent = data.message || 'Registration failed!';
+                messageDiv.style.color = 'red';
+            }
+        } catch (error) {
+            console.error('Error during registration:', error);
+            messageDiv.textContent = 'An error occurred during registration. Please try again later.';
+            messageDiv.style.color = 'red';
+        }
+    });
+});
+    </script>
     
    
 </body>
